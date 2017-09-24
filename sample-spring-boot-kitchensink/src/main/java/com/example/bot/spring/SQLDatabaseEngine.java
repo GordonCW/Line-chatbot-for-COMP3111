@@ -17,18 +17,40 @@ public class SQLDatabaseEngine extends DatabaseEngine {
 		try {
 			Connection connection = getConnection();
 			PreparedStatement stmt = connection.prepareStatement(
-					"select response from dialogue where keyword like concat('%', ?, '%')" );
-			
-			stmt.setString(1, text.toLowerCase());
+					"select keyword, response from dialogue" );
 			
 			ResultSet rs = stmt.executeQuery();
 			
-			if (rs.next()) {
-				result = rs.getString(1);
+			while (rs.next()) {
+				if (text.toLowerCase().contains(rs.getString(1))) {
+					result = rs.getString(2);
+					
+					break;
+				}
 			}
 			
 			rs.close();
 			stmt.close();
+			
+			if (result != null) {
+				
+				//update hit
+				stmt = connection.prepareStatement(
+						"update dialogue set hit = hit + 1 where response = ?" );
+				stmt.setString(1, result);
+				stmt.executeUpdate();
+				stmt.close();
+				
+				//get hit
+				stmt = connection.prepareStatement(
+						"select hit from dialogue where response = ?");
+				stmt.setString(1, result);
+				rs = stmt.executeQuery();
+				if (rs.next()) {
+					result += "\nhit(s): " + rs.getInt(1);
+				}
+			}
+			
 			connection.close();
 			
 		} catch (Exception e) {

@@ -46,7 +46,8 @@ import com.example.bot.spring.DatabaseEngine;
 
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { KitchenSinkTester.class, DatabaseEngine.class })
+//@SpringBootTest(classes = { KitchenSinkTester.class, DatabaseEngine.class })
+@SpringBootTest(classes = { KitchenSinkTester.class, SQLDatabaseEngine.class })
 public class KitchenSinkTester {
 	@Autowired
 	private DatabaseEngine databaseEngine;
@@ -72,7 +73,7 @@ public class KitchenSinkTester {
 			thrown = true;
 		}
 		assertThat(!thrown);
-		assertThat(result.equals("def"));
+		assertThat(result.contains("def"));
 	}
 	
 	@Test
@@ -85,7 +86,7 @@ public class KitchenSinkTester {
 			thrown = true;
 		}
 		assertThat(!thrown);
-		assertThat(result.equals("def"));
+		assertThat(result.contains("def"));
 	}
 	
 	@Test
@@ -98,6 +99,28 @@ public class KitchenSinkTester {
 			thrown = true;
 		}
 		assertThat(!thrown);
-		assertThat(result.equals("Hey, how things going?"));
+		assertThat(result.contains("Hey, how things going?"));
+	}
+	
+	@Test
+	public void testhit() throws Exception {
+
+		boolean thrown = false;
+		String result = null;
+		int original, current;
+		original = current = 0;
+		try {
+			result = this.databaseEngine.search("hi");
+			String[] parts1 = result.split("hit(s): ");
+			original = Integer.valueOf(parts1[1]);
+			
+			result = this.databaseEngine.search("hi");
+			String[] parts2 = result.split("hit(s): ");
+			current = Integer.valueOf(parts2[1]);
+		} catch (Exception e) {
+			thrown = true;
+		}
+		assertThat(!thrown);
+		assertThat(current == (original + 1));
 	}
 }
