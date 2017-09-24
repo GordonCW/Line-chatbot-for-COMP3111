@@ -11,8 +11,35 @@ import java.net.URI;
 public class SQLDatabaseEngine extends DatabaseEngine {
 	@Override
 	String search(String text) throws Exception {
-		//Write your code here
-		return null;
+		
+		String result = null;
+
+		try {
+			Connection connection = getConnection();
+			PreparedStatement stmt = connection.prepareStatement(
+					"select response from dialogue where keyword like concat('%', ?, '%')" );
+			
+			stmt.setString(1, text.toLowerCase());
+			
+			ResultSet rs = stmt.executeQuery();
+			
+			if (rs.next()) {
+				result = rs.getString(1);
+			}
+			
+			rs.close();
+			stmt.close();
+			connection.close();
+			
+		} catch (Exception e) {
+			log.info("Exception while reading data from database: {}", e.toString());
+		}
+		
+		if (result != null) {
+			return result;
+		}
+
+		throw new Exception("NOT FOUND");
 	}
 	
 	
